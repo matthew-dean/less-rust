@@ -1,0 +1,21 @@
+{
+  "name": "@less/tree-sitter-css",
+  "version": "5.0.0-alpha.0",
+  "description": "",
+  "main": "bindings/node",
+  "scripts": {
+    "configure": "node-gyp configure",
+    "config": "tree-sitter init-config",
+    "build": "tree-sitter generate && node-gyp build",
+    "test": "tree-sitter test",
+    "parse": "tree-sitter parse example-file"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "tree-sitter-cli": "^0.20.0"
+  },
+  "dependencies": {
+    "nan": "^2.14.2"
+  }
+}
