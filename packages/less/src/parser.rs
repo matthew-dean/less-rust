@@ -6,7 +6,7 @@ use pest::Parser;
 #[grammar = "less.pest"]
 pub struct LessParser;
 
-enum LessValue<'a> {
+pub enum LessValue<'a> {
     Object(Vec<(&'a str, LessValue<'a>)>),
     Array(Vec<LessValue<'a>>),
     String(&'a str),
@@ -17,7 +17,6 @@ enum LessValue<'a> {
 
 use pest::error::Error;
 
-#[wasm_bindgen]
 pub fn parse(contents: &str) -> Result<LessValue, Error<Rule>>{
     let less = LessParser::parse(Rule::root, contents)?.next().unwrap();
 

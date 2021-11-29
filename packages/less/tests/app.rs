@@ -11,7 +11,7 @@ extern crate less;
 #[test]
 fn rust_test() {
     assert_eq!(1, 1);
-    less::parser::parse();
+    let result = less::parser::parse("{{}}");
 }
 
 
