@@ -1,35 +1,23 @@
-WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+// Less extends from https://www.w3.org/TR/css-syntax-3/
 
-object = {
-    "{" ~ "}" |
-    "{" ~ pair ~ ("," ~ pair)* ~ "}"
-}
-pair = { string ~ ":" ~ value }
+ws = { " " | "\t" | NEWLINE }
+WHITESPACE = _{ ws* }
+COMMENT = _{ multi_comment | line_comment }
 
-array = {
-    "[" ~ "]" |
-    "[" ~ value ~ ("," ~ value)* ~ "]"
-}
+multi_comment = @{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+line_comment = @{ "//" ~ (!"\n" ~ ANY)* }
 
-value = _{ object | array | string | number | boolean | null }
+escape = @{ "\\" ~ }
+escape_text = { !("\n" | ASCII_HEX_DIGIT) ~ ANY | ASCII_HEX_DIGIT{1,6} ~ ws? }
 
-boolean = { "true" | "false" }
-
-null = { "null" }
-
-string = ${ "\"" ~ inner ~ "\"" }
-inner = @{ char* }
-char = {
-    !("\"" | "\\") ~ ANY
-    | "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
-    | "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
+ident_token = {
+    (
+        "--"
+        "-"
+    ) ~ (
+        
+    )
 }
 
-number = @{
-    "-"?
-    ~ ("0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*)
-    ~ ("." ~ ASCII_DIGIT*)?
-    ~ (^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+)?
-}
 
-root = _{ SOI ~ (object | array) ~ EOI }
+stylesheet = _{ SOI ~ (object | array) ~ EOI }
