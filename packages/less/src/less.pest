@@ -7,17 +7,95 @@ COMMENT = _{ multi_comment | line_comment }
 multi_comment = @{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
 line_comment = @{ "//" ~ (!"\n" ~ ANY)* }
 
-escape = @{ "\\" ~ }
+escape = @{ "\\" ~ escape_text }
 escape_text = { !("\n" | ASCII_HEX_DIGIT) ~ ANY | ASCII_HEX_DIGIT{1,6} ~ ws? }
 
-ident_token = {
-    (
-        "--"
-        "-"
-    ) ~ (
-        
-    )
+nmstart = @{ "-"? ~ (ASCII_ALPHA | "_" | NON_ASCII | escape) }
+nmchar = @{ ASCII_DIGIT | ASCII_ALPHA | "_" | "-" | escape }
+ident_token = @{
+    ( "--" | nmstart ) ~ nmchar*
 }
 
+function_token = @{ ident_token ~ "(" }
+at_keyword_token = @{ "@" ~ ident_token }
+hash_token = @{ "#" ~ (nmchar | escape)+ }
 
-stylesheet = _{ SOI ~ (object | array) ~ EOI }
+string1 = @{
+    "\"" ~ (
+        !("\"" | "\\" | "\n") ~ ANY
+        | escape
+        | "\\" ~ NEWLINE 
+    )* ~ "\""
+}
+string2 = @{
+    "'" ~ (
+        !("'" | "\\" | "\n") ~ ANY
+        | escape
+        | "\\" ~ NEWLINE 
+    )* ~ "'"
+}
+string_token = { string1 | string2 }
+
+url_token = @{
+    "url("
+    ~ ws*
+    ~ (
+        !("\"" | "'" | "(" | ")" | "\\" | ws | NON_PRINTABLE) ~ ANY
+        | escape
+        | string_token
+    )*
+    ~ ws*
+    ~ ")"
+}
+
+NON_PRINTABLE = {
+	'\u{0000}'..'\u{0008}'
+	| "\u{000B}"
+    | '\u{000E}'..'\u{001F}'
+    | "\u{007F}"
+}
+
+number_token = @{
+    ("+" | "-")?
+    ~ (
+        ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)?
+        | "." ~ ASCII_DIGIT+
+    )
+    ~ (
+        ^"e"
+        ~ ("+" | "-")?
+        ~ ASCII_DIGIT+
+    )?
+}
+
+// or percentage_token
+dimension_token = @{ number_token ~ (ident_token | "%") }
+CDO_token = { "<!--" }
+CDC_token = { "-->" }
+
+NON_ASCII = { '\u{0080}'..'\u{10FFFF}' }
+
+// start
+root = {
+    (
+        CDO_token
+        | CDC_token
+        | qualified_rule
+        | at_rule
+    )*
+}
+
+rule_list = {
+    (
+        qualified_rule
+        | at_rule
+    )*
+}
+
+at_rule = {
+    at_keyword_token
+}
+
+qualified_rule = {
+	ident_token ~ "{" ~ "}"
+}
